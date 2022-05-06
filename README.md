@@ -1,6 +1,6 @@
 # rest_auth_login
 
-A new Flutter project.
+Google Task Clone
 
 ## Getting Started
 
