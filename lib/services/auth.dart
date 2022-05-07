@@ -4,7 +4,7 @@ import 'package:flutter_session_manager/flutter_session_manager.dart';
 import 'package:http/http.dart' as http;
 
 class Auth {
-  final baseURL = 'http://10.0.2.2:5000';
+  final baseURL = 'https://tasksapi.vercel.app';
   static final sessionManager = SessionManager();
 
   Future<dynamic> register(String name, String email, String password) async {

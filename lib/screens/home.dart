@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_session_manager/flutter_session_manager.dart';
+import 'package:rest_auth_login/shared/input.dart';
 import '../models/todo.dart';
 import '../services/services.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
@@ -24,6 +26,16 @@ class _HomeState extends State<Home> {
     _scaffoldKey.currentState!.openDrawer();
   }
 
+  void showSettingsPanel() {
+    _scaffoldKey.currentState!.openEndDrawer();
+    showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (context) {
+          return const Input();
+        });
+  }
+
   @override
   Widget build(BuildContext context) {
     void doNothing(BuildContext context) {}
@@ -32,7 +44,7 @@ class _HomeState extends State<Home> {
         key: _scaffoldKey,
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
-          onPressed: () {},
+          onPressed: showSettingsPanel,
         ),
         bottomNavigationBar: BottomAppBar(
             elevation: 20.0,
@@ -58,7 +70,10 @@ class _HomeState extends State<Home> {
                 ),
                 ListTile(
                   title: const Text('Logout'),
-                  onTap: () {},
+                  onTap: () async {
+                    await SessionManager().destroy();
+                    Navigator.popAndPushNamed(context, '/');
+                  },
                 ),
               ],
             ),
@@ -76,7 +91,6 @@ class _HomeState extends State<Home> {
             setState(() {
               futureTodo = Services.getTodos();
             });
-            // return futureTodo;
           },
           child: Column(
             children: [
@@ -122,6 +136,9 @@ class _HomeState extends State<Home> {
                                     onPressed: () {},
                                   ),
                                   title: Text(todo.todo),
+                                  subtitle: todo.details.isEmpty
+                                      ? null
+                                      : Text(todo.details),
                                 ));
                             // return ListTile(
                             //   title: Text(todo.todo),
