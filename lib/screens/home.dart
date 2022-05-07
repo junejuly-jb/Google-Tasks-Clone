@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_session_manager/flutter_session_manager.dart';
 import 'package:rest_auth_login/shared/input.dart';
 import '../models/todo.dart';
 import '../services/services.dart';
@@ -25,15 +26,14 @@ class _HomeState extends State<Home> {
     _scaffoldKey.currentState!.openDrawer();
   }
 
-  void showSettingsPanel(){
+  void showSettingsPanel() {
     _scaffoldKey.currentState!.openEndDrawer();
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
-        builder: (context){
-            return const Input();
-        }
-    );
+        builder: (context) {
+          return const Input();
+        });
   }
 
   @override
@@ -70,7 +70,10 @@ class _HomeState extends State<Home> {
                 ),
                 ListTile(
                   title: const Text('Logout'),
-                  onTap: () {},
+                  onTap: () async {
+                    await SessionManager().destroy();
+                    Navigator.popAndPushNamed(context, '/');
+                  },
                 ),
               ],
             ),
@@ -133,7 +136,9 @@ class _HomeState extends State<Home> {
                                     onPressed: () {},
                                   ),
                                   title: Text(todo.todo),
-                                  subtitle: todo.details.isEmpty ? null : Text(todo.details),
+                                  subtitle: todo.details.isEmpty
+                                      ? null
+                                      : Text(todo.details),
                                 ));
                             // return ListTile(
                             //   title: Text(todo.todo),
