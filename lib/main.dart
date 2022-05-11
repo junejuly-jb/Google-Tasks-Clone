@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:rest_auth_login/screens/details.dart';
 import 'package:rest_auth_login/screens/home.dart';
 import 'package:rest_auth_login/screens/login.dart';
 import 'package:rest_auth_login/screens/register.dart';
@@ -44,7 +45,8 @@ class MyApp extends StatelessWidget {
           '/': (context) => const Wrapper(),
           '/home': (context) => const Home(),
           '/login': (context) => const Login(),
-          '/register': (context) => const Register()
+          '/register': (context) => const Register(),
+          '/details': (context) => const Details()
         },
       ),
     );

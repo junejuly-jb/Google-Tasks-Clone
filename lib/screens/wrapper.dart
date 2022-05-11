@@ -26,7 +26,6 @@ class Wrapper extends StatelessWidget {
               return const Home();
             }
           }
-          print('nodata');
           return const Login();
         }
     );
