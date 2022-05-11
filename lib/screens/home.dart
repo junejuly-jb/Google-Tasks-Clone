@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
-import 'package:rest_auth_login/shared/input.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import '../models/todo.dart';
 import '../services/services.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -15,6 +14,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   late Future<List<Todo>> futureTodo;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -32,14 +33,92 @@ class _HomeState extends State<Home> {
         context: context,
         isScrollControlled: true,
         builder: (context) {
-          return const Input();
+          bool isTextFieldVisible = false;
+          String task = '';
+          String details = '';
+          return StatefulBuilder(
+              builder: (BuildContext context, StateSetter mystate) {
+            return Padding(
+              padding: MediaQuery.of(context).viewInsets,
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(30.0, 25.0, 30.0, 10.0),
+                child: Form(
+                  key: _formKey,
+                  child: Wrap(
+                    children: [
+                      TextField(
+                        onChanged: (value) => mystate(() => task = value),
+                        autofocus: true,
+                        decoration: const InputDecoration.collapsed(
+                            hintText: 'New task'),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 10.0, horizontal: 0.0),
+                        child: isTextFieldVisible
+                            ? TextField(
+                                onChanged: (value) {
+                                  mystate(() => details = value);
+                                },
+                                decoration: const InputDecoration.collapsed(
+                                    hintText: 'Add details'))
+                            : null,
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                              color: Colors.blue,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () {
+                                mystate(() {
+                                  isTextFieldVisible = !isTextFieldVisible;
+                                });
+                              },
+                              icon: const Icon(Icons.menu_open)),
+                          const Spacer(),
+                          TextButton(
+                              onPressed: task.isEmpty
+                                  ? null
+                                  : () async {
+                                      final result = await Services.postTodo(
+                                          task, details);
+                                      if (!result['success']) {
+                                        Fluttertoast.showToast(
+                                            msg: result['message']);
+                                      } else {
+                                        await refresh();
+                                        Fluttertoast.showToast(
+                                            msg: result['message']);
+                                        Navigator.pop(context);
+                                      }
+                                    },
+                              child: Text(
+                                'Save',
+                                style: TextStyle(
+                                    color: task.isEmpty
+                                        ? Colors.grey[400]
+                                        : Colors.grey[850]),
+                              ))
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            );
+          });
         });
+  }
+
+  refresh() {
+    setState(() {
+      futureTodo = Services.getTodos();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    void doNothing(BuildContext context) {}
-
     return Scaffold(
         key: _scaffoldKey,
         floatingActionButton: FloatingActionButton(
@@ -87,10 +166,8 @@ class _HomeState extends State<Home> {
         ),
         body: RefreshIndicator(
           onRefresh: () async {
-            await Future.delayed(const Duration(seconds: 2));
-            setState(() {
-              futureTodo = Services.getTodos();
-            });
+            await Future.delayed(const Duration(seconds: 1));
+            refresh();
           },
           child: Column(
             children: [
@@ -98,51 +175,35 @@ class _HomeState extends State<Home> {
                 future: futureTodo,
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5.0, vertical: 0.0),
+                    return Expanded(
                       child: ListView.builder(
                           scrollDirection: Axis.vertical,
+                          physics: const BouncingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics()),
                           shrinkWrap: true,
                           itemCount: snapshot.data!.length,
                           itemBuilder: (context, index) {
                             Todo todo = snapshot.data![index];
-                            return Slidable(
-                                key: const ValueKey(0),
-                                startActionPane: ActionPane(
-                                  motion: const ScrollMotion(),
-                                  children: [
-                                    SlidableAction(
-                                      onPressed: doNothing,
-                                      backgroundColor: const Color(0xFFFE4A49),
-                                      foregroundColor: Colors.white,
-                                      icon: Icons.delete,
-                                      label: 'Delete',
-                                    ),
-                                    SlidableAction(
-                                      onPressed: doNothing,
-                                      backgroundColor: const Color(0xFF21B7CA),
-                                      foregroundColor: Colors.white,
-                                      icon: Icons.share,
-                                      label: 'Share',
-                                    ),
-                                  ],
-                                ),
-                                child: ListTile(
-                                  leading: IconButton(
-                                    icon: todo.flag
-                                        ? const Icon(Icons.task_alt_outlined)
-                                        : const Icon(Icons.circle_outlined),
-                                    onPressed: () {},
-                                  ),
-                                  title: Text(todo.todo),
-                                  subtitle: todo.details.isEmpty
-                                      ? null
-                                      : Text(todo.details),
-                                ));
-                            // return ListTile(
-                            //   title: Text(todo.todo),
-                            // );
+                            return ListTile(
+                              onTap: () {
+                                Navigator.pushNamed(context, '/details', arguments: {
+                                  "id": todo.id,
+                                  "todo": todo.todo,
+                                  "details": todo.details,
+                                  "flag": todo.flag
+                                });
+                              },
+                              leading: IconButton(
+                                icon: todo.flag
+                                    ? const Icon(Icons.task_alt_outlined)
+                                    : const Icon(Icons.circle_outlined),
+                                onPressed: () {},
+                              ),
+                              title: Text(todo.todo),
+                              subtitle: todo.details.isEmpty
+                                  ? null
+                                  : Text(todo.details),
+                            );
                           }),
                     );
                   } else if (snapshot.hasError) {

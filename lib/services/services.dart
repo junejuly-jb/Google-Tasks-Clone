@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_session_manager/flutter_session_manager.dart';
 
 import '../models/todo.dart';
@@ -10,16 +12,23 @@ class Services {
   static Future<List<Todo>> getTodos() async {
     var token = await SessionManager().get('token');
     var url = Uri.parse('$baseURL/api/v1/todos');
-    print(token);
     final response =
         await http.get(url, headers: {'Authorization': 'Bearer $token'});
-    print(response.body);
     if (response.statusCode == 200) {
-      await Future.delayed(const Duration(seconds: 1));
       final List<Todo> todos = todoFromJson(response.body);
       return todos;
     } else {
       throw Exception('Failed to load post');
     }
+  }
+
+  static Future postTodo(String task, String details) async {
+    var url = Uri.parse('$baseURL/api/v1/add-todo');
+    var token = await SessionManager().get('token');
+    final response = await http.post(url,
+        body: {'todo': task, 'details': details},
+        headers: {'Authorization': 'Bearer $token'});
+    Map res = await json.decode(response.body);
+    return res;
   }
 }
