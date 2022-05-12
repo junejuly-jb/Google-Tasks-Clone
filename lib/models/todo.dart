@@ -18,10 +18,10 @@ class Todo {
     required this.flag,
   });
 
-  final String id;
-  final String todo;
-  final String details;
-  final bool flag;
+  String id;
+  String todo;
+  String details;
+  bool flag;
 
   factory Todo.fromJson(Map<String, dynamic> json) => Todo(
         id: json["_id"],

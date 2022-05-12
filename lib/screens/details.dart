@@ -13,6 +13,7 @@ class Details extends StatefulWidget {
 class _DetailsState extends State<Details> {
   Map data = {};
   bool isChanged = false;
+  bool isLoading = false;
   final todoController = TextEditingController();
   final detailsController = TextEditingController();
 
@@ -33,13 +34,32 @@ class _DetailsState extends State<Details> {
           content: const Text('Do you want to delete this todo?'),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context),child: const Text('Cancel')),
-            TextButton(onPressed: deleteTodo, child: const Text('Delete')),
+            // TextButton(onPressed: deleteTodo, child: const Text('Delete')),
+            isLoading ? 
+            TextButton.icon(
+              onPressed: (){}, 
+              icon: Container(
+                width: 24,
+                height: 24,
+                padding: const EdgeInsets.all(2.0),
+                child: const CircularProgressIndicator(
+                  color: Colors.grey,
+                  strokeWidth: 3,
+                ),
+              ), 
+              label: const Text('Delete', style: TextStyle(color: Colors.grey),)
+            ) : 
+            TextButton(
+              child: const Text('Delete'),
+              onPressed: deleteTodo,
+            )
           ],
       )
     );
   }
 
   Future deleteTodo() async {
+    setState(() => isLoading = true);
     final result = await Services.deleteTodo(data['id']);
     if(result['status'] == 200){
       Navigator.pop(context);
@@ -124,14 +144,16 @@ class _DetailsState extends State<Details> {
             ),
           ),
           bottomNavigationBar: BottomAppBar(
-              elevation: 20.0,
+              elevation: 10.0,
               shape: const CircularNotchedRectangle(),
               clipBehavior: Clip.antiAliasWithSaveLayer,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                      onPressed: () {}, child: const Text('Mark completed'))
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                    child: TextButton(onPressed: () {}, child: const Text('Mark completed')),
+                  )
                 ],
               ))),
     );
