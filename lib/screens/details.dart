@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rest_auth_login/services/services.dart';
 
 class Details extends StatefulWidget {
   const Details({Key? key}) : super(key: key);
@@ -21,6 +23,30 @@ class _DetailsState extends State<Details> {
   passDataToController(Map data) {
     todoController.text = data['todo'];
     detailsController.text = data['details'];
+  }
+
+  showDeleteDialog(){
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+          title: const Text('Delete?'),
+          content: const Text('Do you want to delete this todo?'),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context),child: const Text('Cancel')),
+            TextButton(onPressed: deleteTodo, child: const Text('Delete')),
+          ],
+      )
+    );
+  }
+
+  Future deleteTodo() async {
+    final result = await Services.deleteTodo(data['id']);
+    if(result['status'] == 200){
+      Navigator.pop(context);
+      Fluttertoast.showToast(msg: result['message']);
+      Navigator.pop(context, result);
+    }
+    print(result);
   }
 
   @override
@@ -45,12 +71,13 @@ class _DetailsState extends State<Details> {
             elevation: 0,
             actions: [
               IconButton(
-                  onPressed: () {}, icon: const Icon(CupertinoIcons.delete)),
+                  onPressed: showDeleteDialog,
+                  icon: const Icon(CupertinoIcons.delete)),
               Container(
                 child: isChanged
                     ? IconButton(
                         onPressed: () {},
-                        icon: const Icon(CupertinoIcons.check_mark))
+                        icon: const Icon(CupertinoIcons.checkmark_alt))
                     : null,
               )
             ],
@@ -73,13 +100,10 @@ class _DetailsState extends State<Details> {
                       const Icon(CupertinoIcons.text_alignleft),
                       const SizedBox(width: 20.0),
                       Expanded(
-                        child: TextFormField(
-                          controller: detailsController,
-                          decoration: const InputDecoration.collapsed(
-                            hintText: 'Add details'
-                          )
-                        )
-                      )
+                          child: TextFormField(
+                              controller: detailsController,
+                              decoration: const InputDecoration.collapsed(
+                                  hintText: 'Add details')))
                     ],
                   ),
                   const SizedBox(height: 15.0),
@@ -106,10 +130,10 @@ class _DetailsState extends State<Details> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: () {}, child: const Text('Mark completed'))
+                  TextButton(
+                      onPressed: () {}, child: const Text('Mark completed'))
                 ],
-              )
-          )),
+              ))),
     );
   }
 }

@@ -185,13 +185,18 @@ class _HomeState extends State<Home> {
                           itemBuilder: (context, index) {
                             Todo todo = snapshot.data![index];
                             return ListTile(
-                              onTap: () {
-                                Navigator.pushNamed(context, '/details', arguments: {
+                              onTap: () async {
+                                var result = await Navigator.pushNamed(context, '/details', arguments: {
                                   "id": todo.id,
                                   "todo": todo.todo,
                                   "details": todo.details,
                                   "flag": todo.flag
                                 });
+                                print(result.runtimeType);
+                                if(result != null){
+                                  // Fluttertoast.showToast(msg: result.message);
+                                  refresh();
+                                }
                               },
                               leading: IconButton(
                                 icon: todo.flag
@@ -199,10 +204,20 @@ class _HomeState extends State<Home> {
                                     : const Icon(Icons.circle_outlined),
                                 onPressed: () {},
                               ),
-                              title: Text(todo.todo),
+                              title: Text(
+                                todo.todo,
+                                style: TextStyle(
+                                  decoration: todo.flag ? TextDecoration.lineThrough : null
+                                ),
+                              ),
                               subtitle: todo.details.isEmpty
                                   ? null
-                                  : Text(todo.details),
+                                  : Text(
+                                      todo.details,
+                                      style: TextStyle(
+                                        decoration: todo.flag? TextDecoration.lineThrough : null
+                                      ),
+                                    ),
                             );
                           }),
                     );
