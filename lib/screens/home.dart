@@ -117,6 +117,17 @@ class _HomeState extends State<Home> {
     });
   }
 
+  buttonPress(String id, bool flag) async {
+    final result = await Services.todoToggler(id, flag);
+    if (result['status'] == 200) {
+      Fluttertoast.showToast(msg: result['message']);
+      refresh();
+    }
+    else{
+      Fluttertoast.showToast(msg: result['message']);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -131,9 +142,15 @@ class _HomeState extends State<Home> {
             clipBehavior: Clip.antiAliasWithSaveLayer,
             child: Row(
               children: [
-                IconButton(onPressed: openDrawer, icon: const Icon(Icons.menu)),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                  child: IconButton(onPressed: openDrawer, icon: const Icon(Icons.menu)),
+                ),
                 const Spacer(),
-                IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                  child: IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
+                )
               ],
             )),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -202,7 +219,10 @@ class _HomeState extends State<Home> {
                                 icon: todo.flag
                                     ? const Icon(Icons.task_alt_outlined)
                                     : const Icon(Icons.circle_outlined),
-                                onPressed: () {},
+                                onPressed: (){
+                                  // todo[index].todo = 'Hello World';
+                                  buttonPress(todo.id, todo.flag);
+                                },
                               ),
                               title: Text(
                                 todo.todo,

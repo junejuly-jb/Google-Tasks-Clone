@@ -39,4 +39,13 @@ class Services {
     Map res = await json.decode(response.body);
     return res;
   }
+
+  static Future todoToggler(String id, bool flag) async {
+    var request = flag ? 'unmark-todo' : 'mark-todo';
+    var url = Uri.parse('$baseURL/api/v1/$request/$id');
+    var token = await SessionManager().get('token');
+    final response = await http.put(url, headers: {'Authorization': 'Bearer $token'});
+    Map res = await json.decode(response.body);
+    return res;
+  }
 }
