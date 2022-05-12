@@ -31,4 +31,12 @@ class Services {
     Map res = await json.decode(response.body);
     return res;
   }
+
+  static Future deleteTodo(String id) async {
+    var url = Uri.parse('$baseURL/api/v1/delete-todo/$id');
+    var token = await SessionManager().get('token');
+    final response = await http.delete(url, headers: {'Authorization': 'Bearer $token'});
+    Map res = await json.decode(response.body);
+    return res;
+  }
 }
