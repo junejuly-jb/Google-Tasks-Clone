@@ -40,11 +40,25 @@ class Services {
     return res;
   }
 
-  static Future todoToggler(String id, bool flag) async {
-    var request = flag ? 'unmark-todo' : 'mark-todo';
+  static Future todoToggler(String? id, bool? flag) async {
+    var request = '';
+    if(flag != null){
+      request = flag ? 'unmark-todo' : 'mark-todo';
+    }
     var url = Uri.parse('$baseURL/api/v1/$request/$id');
     var token = await SessionManager().get('token');
     final response = await http.put(url, headers: {'Authorization': 'Bearer $token'});
+    Map res = await json.decode(response.body);
+    return res;
+  }
+
+  static Future updateTodo(String? id, String todo, String details) async {
+    var url = Uri.parse('$baseURL/api/v1/update-todo/$id');
+    var token = await SessionManager().get('token');
+    final response = await http.put(url,
+      body: {'todo': todo, 'details': details},
+      headers: {'Authorization': 'Bearer $token'}
+    );
     Map res = await json.decode(response.body);
     return res;
   }

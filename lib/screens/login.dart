@@ -26,7 +26,6 @@ class _LoginState extends State<Login> {
         Navigator.popAndPushNamed(context, '/home');
       } else {
         setState(() => isLoading = false);
-        print(result);
       }
     } catch (e) {
       setState(() => isLoading = false);
@@ -39,56 +38,58 @@ class _LoginState extends State<Login> {
     return isLoading
         ? const Loader()
         : Scaffold(
-            body: SafeArea(
-                child: Padding(
+            appBar: AppBar(
+              elevation: 0,
+            ),
+            body: Padding(
             padding:
-                const EdgeInsets.symmetric(horizontal: 20.0, vertical: 0.0),
+            const EdgeInsets.symmetric(horizontal: 20.0, vertical: 0.0),
             child: Column(
               children: <Widget>[
-                const SizedBox(height: 50),
-                Text(
-                  'Welcome back!',
-                  style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800]),
-                ),
-                const SizedBox(height: 20),
-                Form(
-                  child: Column(
-                    children: <Widget>[
-                      TextFormField(
-                          onChanged: (value) => setState(() => email = value),
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                          )),
-                      TextFormField(
-                        onChanged: (value) => setState(() => password = value),
-                        decoration: const InputDecoration(
-                          labelText: 'Password',
-                        ),
-                        obscureText: true,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ElevatedButton(
-                              onPressed: login,
-                              child: const Text('Login')),
-                          const SizedBox(width: 20),
-                          ElevatedButton(
-                              onPressed: () {
-                                print('hello');
-                                Navigator.pushNamed(context, '/register');
-                              },
-                              child: const Text('Register'))
-                        ],
-                      )
-                    ],
+            const SizedBox(height: 50),
+            Text(
+              'Welcome back!',
+              style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800]),
+            ),
+            const SizedBox(height: 20),
+            Form(
+              child: Column(
+                children: <Widget>[
+                  TextFormField(
+                      onChanged: (value) => setState(() => email = value),
+                      decoration: const InputDecoration(
+                        labelText: 'Email',
+                      )),
+                  TextFormField(
+                    onChanged: (value) => setState(() => password = value),
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                    ),
+                    obscureText: true,
                   ),
-                )
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                          onPressed: login,
+                          child: const Text('Login')),
+                      const SizedBox(width: 20),
+                      ElevatedButton(
+                          onPressed: () {
+                            print('hello');
+                            Navigator.pushNamed(context, '/register');
+                          },
+                          child: const Text('Register'))
+                    ],
+                  )
+                ],
+              ),
+            )
               ],
             ),
-          )));
+          ));
   }
 }

@@ -1,8 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_session_manager/flutter_session_manager.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:rest_auth_login/shared/loader.dart';
 import '../models/todo.dart';
 import '../services/services.dart';
+import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -16,6 +19,7 @@ class _HomeState extends State<Home> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final _formKey = GlobalKey<FormState>();
+  bool isLoading = false;
 
   @override
   void initState() {
@@ -36,8 +40,9 @@ class _HomeState extends State<Home> {
           bool isTextFieldVisible = false;
           String task = '';
           String details = '';
+          
           return StatefulBuilder(
-              builder: (BuildContext context, StateSetter mystate) {
+            builder: (BuildContext context, StateSetter mystate) {
             return Padding(
               padding: MediaQuery.of(context).viewInsets,
               child: Container(
@@ -67,15 +72,16 @@ class _HomeState extends State<Home> {
                       Row(
                         children: [
                           IconButton(
-                              color: Colors.blue,
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
-                              onPressed: () {
-                                mystate(() {
-                                  isTextFieldVisible = !isTextFieldVisible;
-                                });
-                              },
-                              icon: const Icon(Icons.menu_open)),
+                            color: Colors.blue,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () {
+                              mystate(() =>
+                                isTextFieldVisible = !isTextFieldVisible
+                              );
+                            },
+                            icon: const Icon(Icons.menu_open)
+                          ),
                           const Spacer(),
                           TextButton(
                               onPressed: task.isEmpty
@@ -94,7 +100,7 @@ class _HomeState extends State<Home> {
                                       }
                                     },
                               child: Text(
-                                'Save',
+                                'Save Todo',
                                 style: TextStyle(
                                     color: task.isEmpty
                                         ? Colors.grey[400]
@@ -130,7 +136,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return isLoading ? const Loader() : Scaffold(
         key: _scaffoldKey,
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
@@ -143,12 +149,12 @@ class _HomeState extends State<Home> {
             child: Row(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
                   child: IconButton(onPressed: openDrawer, icon: const Icon(Icons.menu)),
                 ),
                 const Spacer(),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5.0),
                   child: IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert)),
                 )
               ],
@@ -167,8 +173,10 @@ class _HomeState extends State<Home> {
                 ListTile(
                   title: const Text('Logout'),
                   onTap: () async {
+                    setState(() => isLoading = true);
+                    await Future.delayed(const Duration(seconds: 2));
                     await SessionManager().destroy();
-                    Navigator.popAndPushNamed(context, '/');
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
                 ),
               ],
@@ -209,9 +217,7 @@ class _HomeState extends State<Home> {
                                   "details": todo.details,
                                   "flag": todo.flag
                                 });
-                                print(result.runtimeType);
-                                if(result != null){
-                                  // Fluttertoast.showToast(msg: result.message);
+                                if(result == true){
                                   refresh();
                                 }
                               },

@@ -12,6 +12,10 @@ class Details extends StatefulWidget {
 
 class _DetailsState extends State<Details> {
   Map data = {};
+  String? id;
+  bool flag = false;
+  bool isValuesChanged = false;
+  String text = '';
   bool isChanged = false;
   bool isLoading = false;
   final todoController = TextEditingController();
@@ -24,6 +28,12 @@ class _DetailsState extends State<Details> {
   passDataToController(Map data) {
     todoController.text = data['todo'];
     detailsController.text = data['details'];
+    setState(() {
+      id = data['id'];
+      flag = data['flag'];
+      text = data['flag'] ? 'Mark as incomplete' : 'Mark as complete';
+    });
+
   }
 
   showDeleteDialog(){
@@ -61,12 +71,46 @@ class _DetailsState extends State<Details> {
   Future deleteTodo() async {
     setState(() => isLoading = true);
     final result = await Services.deleteTodo(data['id']);
+    Navigator.pop(context);
+    Fluttertoast.showToast(msg: result['message']);
     if(result['status'] == 200){
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: result['message']);
-      Navigator.pop(context, result);
+      setState(() => isValuesChanged = true);
+      Navigator.pop(context, isValuesChanged);
     }
-    print(result);
+  }
+
+  Future toggleTodo(String? id, bool pflag) async{
+    final result = await Services.todoToggler(id, pflag);
+    Fluttertoast.showToast(msg: result['message']);
+    if(result['status'] == 200){
+      print('200');
+      setState((){
+        isValuesChanged = true;
+        flag = !flag;
+        text = flag ? 'Mark as incomplete' : 'Mark as complete';
+      });
+    }
+  }
+
+  void listener(){
+    dynamic result = isAltered();
+    setState(() => isChanged = result);
+  } 
+
+  Future updateTodo() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final result = await Services.updateTodo(id, todoController.text, detailsController.text);
+    Fluttertoast.showToast(msg: result['message']);
+    if(result['status'] == 500){
+      todoController.text = data['todo'];
+      detailsController.text = data['details'];
+    }
+    else{
+      setState((){
+        isChanged = false;
+        isValuesChanged = true;
+      });
+    }
   }
 
   @override
@@ -74,6 +118,8 @@ class _DetailsState extends State<Details> {
     super.initState();
     Future.delayed(Duration.zero, () {
       data = ModalRoute.of(context)!.settings.arguments as Map;
+      todoController.addListener(listener);
+      detailsController.addListener(listener);
       passDataToController(data);
     });
   }
@@ -83,10 +129,13 @@ class _DetailsState extends State<Details> {
     return GestureDetector(
       onTap: () {
         FocusManager.instance.primaryFocus?.unfocus();
-        var result = isAltered();
-        setState(() => isChanged = result);
       },
-      child: Scaffold(
+      child: WillPopScope(
+        onWillPop: () async {
+          Navigator.pop(context, isValuesChanged);
+          return false;
+        },
+        child: Scaffold(
           appBar: AppBar(
             elevation: 0,
             actions: [
@@ -96,7 +145,7 @@ class _DetailsState extends State<Details> {
               Container(
                 child: isChanged
                     ? IconButton(
-                        onPressed: () {},
+                        onPressed: updateTodo,
                         icon: const Icon(CupertinoIcons.checkmark_alt))
                     : null,
               )
@@ -126,36 +175,28 @@ class _DetailsState extends State<Details> {
                                   hintText: 'Add details')))
                     ],
                   ),
-                  const SizedBox(height: 15.0),
-                  Row(
-                    children: const [
-                      Icon(CupertinoIcons.calendar),
-                      SizedBox(width: 20.0),
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration.collapsed(
-                              hintText: 'Add date/time'),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),
           ),
           bottomNavigationBar: BottomAppBar(
-              elevation: 10.0,
-              shape: const CircularNotchedRectangle(),
-              clipBehavior: Clip.antiAliasWithSaveLayer,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
-                    child: TextButton(onPressed: () {}, child: const Text('Mark completed')),
-                  )
-                ],
-              ))),
+                elevation: 10.0,
+                shape: const CircularNotchedRectangle(),
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 10.0),
+                      child: TextButton(onPressed: () {
+                        toggleTodo(id, flag);
+                      }, child: Text(text)),
+                    )
+                  ],
+                )
+            )
+        ),
+      ),
     );
   }
 }
