@@ -25,7 +25,7 @@ class Auth {
       var response =
           await http.post(url, body: {'email': email, 'password': password});
       Map decode = jsonDecode(response.body);
-      print('try');
+      print(decode);
       return decode;
     } catch (e) {
       print(e);
